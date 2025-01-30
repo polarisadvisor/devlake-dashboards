@@ -12,3 +12,19 @@ To import these dashboards into your installation of Apache Devlake edit the jso
 
 
 The dashboards are provided under the same Apache 2.0 license as DevLake and may be used under the terms of the license. 
+
+# How to use
+These dashboards are shipped in a drop-in replacements for the grafana image that ship with Devlake. 
+
+- `docker pull polarisadvisor/devlake-dashboards:latest`
+- Replace the standard grafana image in `docker-compose.yml` with this image.
+- Stop and restart the containers. 
+
+The setup assumes that the dashboards connect to the datasource named `mysql` defined in the standard
+grafana setup on devlake. 
+
+You are also free to import individual dashboard json files into your current Devlake instance. 
+
+# Issues
+They are still WIP, so probably not usable in any serious sense yet, but if you try them out and find issues
+do raise them here. 
