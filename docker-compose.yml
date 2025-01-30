@@ -1,0 +1,6 @@
+  services:
+    dashboards:
+      image: polarisadvisor/devlake-dashboards:latest
+      build:
+        context: grafana/
+
