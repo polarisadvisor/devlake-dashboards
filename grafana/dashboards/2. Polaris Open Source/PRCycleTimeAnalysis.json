@@ -45,7 +45,7 @@
           "refId": "A"
         }
       ],
-      "title": "1. PR Cycle Time Breakdown",
+      "title": "1. What is the average time from first commit on a branch till it is deployed?",
       "type": "row"
     },
     {
@@ -191,7 +191,7 @@
           ]
         }
       ],
-      "title": "PR Cycle Time [Merged PRs]",
+      "title": "PR Cycle Time for Merged PRs",
       "type": "timeseries"
     },
     {
@@ -337,7 +337,7 @@
           ]
         }
       ],
-      "title": "PR Coding Time [Merged PRs]",
+      "title": "From initial commit to PR raised",
       "type": "timeseries"
     },
     {
@@ -514,7 +514,7 @@
           ]
         }
       ],
-      "title": "PR Pickup Time",
+      "title": "From PR raised to first comment",
       "type": "timeseries"
     },
     {
@@ -660,7 +660,7 @@
           ]
         }
       ],
-      "title": "PR Review Time [Merged PRs]",
+      "title": "From first comment to PR merged",
       "type": "timeseries"
     },
     {
@@ -837,7 +837,7 @@
           ]
         }
       ],
-      "title": "PR Deploy Time [Merged PRs]",
+      "title": "From PR merged to deployed",
       "type": "timeseries"
     },
     {
@@ -1158,7 +1158,7 @@
               ]
             }
           ],
-          "title": "PR Merged Size",
+          "title": "Avg. size of merged PR (loc)",
           "type": "timeseries"
         },
         {
@@ -1260,7 +1260,7 @@
               "hide": false,
               "metricColumn": "none",
               "rawQuery": true,
-              "rawSql": "SELECT\n  DATE_ADD(date(pr.created_date), INTERVAL -$interval(date(pr.created_date))+1 DAY) as time,\n  sum(case when pr.id not in (SELECT pull_request_id FROM pull_request_comments) then 1 else 0 end) as \"PRs Merged w/o Review\"\nFROM \n  pull_requests pr\n  join project_mapping pm on pr.base_repo_id = pm.row_id and pm.table = 'repos' \nWHERE\n  $__timeFilter(pr.created_date)\n  and pm.project_name in (${project})\n  and pr.merged_date is not null\nGROUP BY 1\nORDER BY 1",
+              "rawSql": "SELECT\n  DATE_ADD(date(pr.created_date), INTERVAL -$interval(date(pr.created_date))+1 DAY) as time,\n  sum(case when pr.id not in (SELECT pull_request_id FROM pull_request_comments) then 1 else 0 end) as \"PRs Merged without comments\"\nFROM \n  pull_requests pr\n  join project_mapping pm on pr.base_repo_id = pm.row_id and pm.table = 'repos' \nWHERE\n  $__timeFilter(pr.created_date)\n  and pm.project_name in (${project})\n  and pr.merged_date is not null\nGROUP BY 1\nORDER BY 1",
               "refId": "A",
               "select": [
                 [
@@ -1284,7 +1284,7 @@
               ]
             }
           ],
-          "title": "PRs Merged w/o Review",
+          "title": "Avg. number of PRs merged without comments",
           "type": "timeseries"
         },
         {
@@ -1413,7 +1413,7 @@
               ]
             }
           ],
-          "title": "PR Review Depth",
+          "title": "Avg. number of comments per PR",
           "type": "timeseries"
         }
       ],
@@ -1795,7 +1795,7 @@
   },
   "timepicker": {},
   "timezone": "utc",
-  "title": "PR Cycle Time Analysis",
+  "title": "Where is time spent on the path to production?",
   "uid": "be9vwx873s0e8b",
   "version": 4,
   "weekStart": ""
