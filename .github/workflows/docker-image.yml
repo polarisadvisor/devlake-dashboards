@@ -5,11 +5,13 @@ on:
     branches: [ "main" ]
     paths:
       - "grafana/**"
+      - ".github/**"
 
   pull_request:
     branches: [ "main" ]
     paths:
       - "grafana/**"
+      - ".github/**"
 
 jobs:
 
