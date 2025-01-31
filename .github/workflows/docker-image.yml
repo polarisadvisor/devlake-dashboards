@@ -34,6 +34,6 @@ jobs:
       - name: Build and push Docker image
         run: |
           docker buildx build grafana --file grafana/Dockerfile \
-            --tag ${{ secrets.DOCKER_USERNAME }}/my-image:latest \
-            --tag ${{ secrets.DOCKER_USERNAME }}/my-image:$TIMESTAMP \
+            --tag ${{ secrets.DOCKER_USERNAME }}/devlake-dashboards:latest \
+            --tag ${{ secrets.DOCKER_USERNAME }}/devlake-dashboards:$TIMESTAMP \
             --push
