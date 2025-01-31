@@ -24,11 +24,15 @@
 #it does indicate that the project has yet to be fully endorsed by the ASF.
 
 FROM grafana/grafana:11.2.0
+
 COPY ./provisioning/dashboards /etc/grafana/provisioning/dashboards
 COPY ./provisioning/datasources /etc/grafana/provisioning/datasources
-COPY ./dashboards /etc/grafana/dashboards
+
 COPY ./img/grafana_icon.svg /usr/share/grafana/public/img/grafana_icon.svg
 COPY ./img /usr/share/grafana/public/img/lake
+
+USER grafana
+COPY --chown=grafana:grafana ./dashboards /etc/grafana/dashboards
 ENV GF_USERS_ALLOW_SIGN_UP=false
 ENV GF_SERVER_SERVE_FROM_SUB_PATH=true
 ENV GF_DASHBOARDS_JSON_ENABLED=true
