@@ -45,7 +45,7 @@
           "refId": "A"
         }
       ],
-      "title": "1. What is the average time from first commit on a branch till it is deployed?",
+      "title": "What is the average time from first commit on a branch till it is deployed?",
       "type": "row"
     },
     {
