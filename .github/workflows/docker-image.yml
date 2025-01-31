@@ -31,7 +31,7 @@ jobs:
         run: |
           GIT_SHA=${{ github.sha }}
           docker buildx build grafana --file grafana/Dockerfile \
-            --platform linux/amd64,linux/arm64,windows/amd64 \
+            --platform linux/amd64,linux/arm64 \
             --tag ${{ secrets.DOCKER_USERNAME }}/devlake-dashboards:latest \
             --tag ${{ secrets.DOCKER_USERNAME }}/devlake-dashboards:$GIT_SHA \
             --push
