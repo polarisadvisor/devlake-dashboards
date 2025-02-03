@@ -1799,8 +1799,8 @@
     ]
   },
   "time": {
-    "from": "now-36M",
-    "to": "now-24M"
+    "from": "now-180d",
+    "to": "now"
   },
   "timepicker": {},
   "timezone": "utc",
