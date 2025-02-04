@@ -322,7 +322,7 @@
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "with _prs as(\n  SELECT\n    pr.id,\n    pr.merged_date as pr_merged_date,\n    -- convert null to 0 if a PR has no cycle_time to make sure cycle_time equals the sum of the four metrics below\n\t\tcoalesce(prm.pr_cycle_time/3600,0) as cycle_time\n  FROM pull_requests pr\n    left join project_pr_metrics prm on pr.id = prm.id\n    join project_mapping pm on pr.base_repo_id = pm.row_id and pm.table = 'repos' \n  WHERE\n    $__timeFilter(pr.merged_date)\n    and pm.project_name in (${project})\n  GROUP BY 1,2,3\n)\n\nSELECT \n  DATE_ADD(date(pr_merged_date), INTERVAL - $interval(date(pr_merged_date))+1 DAY) as time,\n  avg(cycle_time) as 'PR Cycle Time(d)'\nFROM _prs\nGROUP BY 1\nORDER BY 1",
+          "rawSql": "with _prs as(\n  SELECT\n    pr.id,\n    prm.pr_created_date,\n    prm.pr_merged_date \n    \n  FROM pull_requests pr\n    left join project_pr_metrics prm on pr.id = prm.id\n    join project_mapping pm on pr.base_repo_id = pm.row_id and pm.table = 'repos' \n  WHERE\n    $__timeFilter(pr.merged_date)\n    and pm.project_name in (${project})\n  GROUP BY 1,2,3\n)\n\nSELECT \n  DATE_ADD(date(pr_merged_date), INTERVAL - $interval(date(pr_merged_date))+1 DAY) as time,\n  avg(TIMESTAMPDIFF(Minute,pr_created_date,pr_merged_date)/1440) as 'PR Review Time'\nFROM _prs\nGROUP BY 1\nORDER BY 1",
           "refId": "A",
           "select": [
             [
@@ -1493,6 +1493,6 @@
   "timezone": "utc",
   "title": "Are code reviews a bottleneck?",
   "uid": "pr-code-review-analysis",
-  "version": 9,
+  "version": 10,
   "weekStart": ""
 }
