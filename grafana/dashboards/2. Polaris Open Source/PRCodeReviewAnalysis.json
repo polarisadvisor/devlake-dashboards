@@ -16,7 +16,7 @@
     ]
   },
   "description": "Commit to Deploy Flow Time",
-  "editable": true,
+  "editable": false,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
   "links": [],
