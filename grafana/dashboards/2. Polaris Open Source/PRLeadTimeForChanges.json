@@ -715,31 +715,6 @@
         "type": "query"
       },
       {
-        "allValue": "",
-        "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": {
-          "type": "mysql",
-          "uid": "mysql"
-        },
-        "definition": "select distinct priority from issues where priority != ''",
-        "hide": 0,
-        "includeAll": true,
-        "label": "P0+P1 Priority",
-        "multi": true,
-        "name": "priority",
-        "options": [],
-        "query": "select distinct priority from issues where priority != ''",
-        "refresh": 1,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 0,
-        "type": "query"
-      },
-      {
         "current": {
           "selected": false,
           "text": "Month",
@@ -778,6 +753,6 @@
   "timezone": "utc",
   "title": "Where is time spent on the path to production?",
   "uid": "pr-lead-time-for-changes",
-  "version": 5,
+  "version": 8,
   "weekStart": ""
 }
