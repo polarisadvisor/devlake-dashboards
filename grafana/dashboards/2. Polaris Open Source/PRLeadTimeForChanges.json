@@ -19,7 +19,6 @@
   "editable": false,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 83,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -908,8 +907,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               }
@@ -1080,8 +1078,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               }
@@ -1224,8 +1221,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               }
@@ -1353,8 +1349,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               }
@@ -1711,8 +1706,8 @@
   "refresh": "",
   "schemaVersion": 39,
   "tags": [
-    "Engineering Leads Dashboard",
-    "Highlights"
+    "Perspective: The Path to Production",
+    "Unit of Work: Pull Requests"
   ],
   "templating": {
     "list": [
@@ -1771,7 +1766,7 @@
       },
       {
         "current": {
-          "selected": true,
+          "selected": false,
           "text": "Month",
           "value": "DAYOFMONTH"
         },
@@ -1808,6 +1803,6 @@
   "timezone": "utc",
   "title": "Where is time spent on the path to production?",
   "uid": "be9vwx873s0e8b",
-  "version": 30,
+  "version": 1,
   "weekStart": ""
 }
