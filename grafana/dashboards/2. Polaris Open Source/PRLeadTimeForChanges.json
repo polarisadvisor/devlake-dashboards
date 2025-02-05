@@ -268,8 +268,8 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 7,
-        "w": 7,
+        "h": 8,
+        "w": 22,
         "x": 1,
         "y": 9
       },
@@ -415,9 +415,9 @@
       },
       "gridPos": {
         "h": 7,
-        "w": 9,
-        "x": 8,
-        "y": 9
+        "w": 22,
+        "x": 1,
+        "y": 17
       },
       "id": 122,
       "links": [
@@ -591,10 +591,10 @@
         ]
       },
       "gridPos": {
-        "h": 7,
-        "w": 7,
-        "x": 17,
-        "y": 9
+        "h": 6,
+        "w": 22,
+        "x": 1,
+        "y": 24
       },
       "id": 119,
       "links": [
@@ -689,10 +689,10 @@
         "current": {
           "selected": true,
           "text": [
-            "Devlake"
+            "All"
           ],
           "value": [
-            "Devlake"
+            "$__all"
           ]
         },
         "datasource": {
@@ -716,8 +716,8 @@
       {
         "current": {
           "selected": true,
-          "text": "Week",
-          "value": "WEEKDAY"
+          "text": "Month",
+          "value": "DAYOFMONTH"
         },
         "description": "",
         "hide": 0,
@@ -727,12 +727,12 @@
         "name": "interval",
         "options": [
           {
-            "selected": false,
+            "selected": true,
             "text": "Month",
             "value": "DAYOFMONTH"
           },
           {
-            "selected": true,
+            "selected": false,
             "text": "Week",
             "value": "WEEKDAY"
           }
