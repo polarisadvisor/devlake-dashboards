@@ -150,7 +150,7 @@
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "with _prs as(\n  SELECT\n    pr.id,\n    pr.merged_date as pr_merged_date,\n    -- convert null to 0 if a PR has no cycle_time to make sure cycle_time equals the sum of the four metrics below\n\t\tcoalesce(prm.pr_cycle_time/3600,0) as cycle_time\n  FROM pull_requests pr\n    left join project_pr_metrics prm on pr.id = prm.id\n    join project_mapping pm on pr.base_repo_id = pm.row_id and pm.table = 'repos' \n  WHERE\n    $__timeFilter(pr.merged_date)\n    and pm.project_name in (${project})\n  GROUP BY 1,2,3\n)\n\nSELECT \n  DATE_ADD(date(pr_merged_date), INTERVAL - $interval(date(pr_merged_date))+1 DAY) as time,\n  avg(cycle_time) as 'PR Lead Time for Changes (d)'\nFROM _prs\nGROUP BY 1\nORDER BY 1",
+          "rawSql": "WITH _prs AS (\n  SELECT\n    pr.id,\n    pr.merged_date AS pr_merged_date,\n  \n    COALESCE(prm.pr_cycle_time/1440, 0) AS cycle_time\n  FROM pull_requests pr\n  -- if a pr does not have a metrics row, we will drop this from the trend rather than skwing this with a zero. We will report on data quality separately, \n  JOIN project_pr_metrics prm ON pr.id = prm.id\n  JOIN project_mapping pm ON pr.base_repo_id = pm.row_id AND pm.table = 'repos'\n  WHERE\n    $__timeFilter(pr.merged_date)\n    AND pm.project_name IN (${project})\n  GROUP BY 1,2,3\n)\nSELECT \n  DATE_ADD(DATE(pr_merged_date), INTERVAL - $interval(DATE(pr_merged_date)) + 1 DAY) AS time,\n  AVG(cycle_time) AS 'PR Lead Time for Changes (d)'\nFROM _prs\nGROUP BY 1\nORDER BY 1;\n",
           "refId": "A",
           "select": [
             [
@@ -195,7 +195,7 @@
       "type": "timeseries"
     },
     {
-      "collapsed": true,
+      "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -203,479 +203,478 @@
         "y": 8
       },
       "id": 121,
-      "panels": [
-        {
-          "datasource": {
-            "default": false,
-            "type": "mysql",
+      "panels": [],
+      "title": "Where is time spent in this process? ",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "default": false,
+        "type": "mysql",
             "uid": "mysql"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "green",
+            "mode": "fixed"
           },
-          "description": "",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "fixedColor": "green",
-                "mode": "fixed"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisGridShow": false,
-                "axisLabel": "Days",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "barWidthFactor": 0.6,
-                "drawStyle": "line",
-                "fillOpacity": 100,
-                "gradientMode": "opacity",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "smooth",
-                "lineWidth": 1,
-                "pointSize": 8,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "auto",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  }
-                ]
-              }
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisGridShow": false,
+            "axisLabel": "Days",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 100,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
             },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 7,
-            "w": 7,
-            "x": 1,
-            "y": 9
-          },
-          "id": 120,
-          "links": [
-            {
-              "targetBlank": true,
-              "title": "PR Coding Time",
-              "url": "https://devlake.apache.org/docs/Metrics/PRCodingTime"
-            }
-          ],
-          "options": {
-            "legend": {
-              "calcs": [
-                "mean"
-              ],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": true
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 8,
+            "scaleDistribution": {
+              "type": "linear"
             },
-            "tooltip": {
-              "maxHeight": 600,
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "pluginVersion": "8.0.6",
-          "targets": [
-            {
-              "datasource": {
-                "type": "mysql",
-                "uid": "mysql"
-              },
-              "editorMode": "code",
-              "format": "table",
-              "group": [],
-              "hide": false,
-              "metricColumn": "none",
-              "rawQuery": true,
-              "rawSql": "with _prs as(\n  SELECT\n    pr.id,\n    pr.merged_date as pr_merged_date,\n    -- convert null to 0 if a PR has no coding_time to make sure cycle_time equals the sum of the four sub-metrics\n\t\tcoalesce(prm.pr_coding_time/1440,0) as coding_time\n  FROM pull_requests pr\n    left join project_pr_metrics prm on pr.id = prm.id\n    join project_mapping pm on pr.base_repo_id = pm.row_id and pm.table = 'repos' \n  WHERE\n    $__timeFilter(pr.merged_date)\n    and pr.merged_date >= DATE_ADD(DATE_ADD($__timeFrom(), INTERVAL -DAY($__timeFrom())+1 DAY), INTERVAL +1 MONTH)\n    and pm.project_name in (${project})\n  GROUP BY 1,2,3\n)\n\nSELECT \n  DATE_ADD(date(pr_merged_date), INTERVAL -$interval(date(pr_merged_date))+1 DAY) as time,\n  avg(coding_time) as 'Coding Time(days)'\nFROM _prs\nGROUP BY 1\nORDER BY 1",
-              "refId": "A",
-              "select": [
-                [
-                  {
-                    "params": [
-                      "id"
-                    ],
-                    "type": "column"
-                  }
-                ]
-              ],
-              "sql": {
-                "columns": [
-                  {
-                    "parameters": [],
-                    "type": "function"
-                  }
-                ],
-                "groupBy": [
-                  {
-                    "property": {
-                      "type": "string"
-                    },
-                    "type": "groupBy"
-                  }
-                ],
-                "limit": 50
-              },
-              "table": "ae_projects",
-              "timeColumn": "ae_create_time",
-              "timeColumnType": "timestamp",
-              "where": [
-                {
-                  "name": "$__timeFilter",
-                  "params": [],
-                  "type": "macro"
-                }
-              ]
-            }
-          ],
-          "title": "From initial commit to PR raised",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "default": false,
-            "type": "mysql",
-            "uid": "mysql"
-          },
-          "description": "",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "fixedColor": "#32add9",
-                "mode": "fixed"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisGridShow": false,
-                "axisLabel": "Days",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "barWidthFactor": 0.6,
-                "drawStyle": "line",
-                "fillOpacity": 100,
-                "gradientMode": "opacity",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "smooth",
-                "lineWidth": 1,
-                "pointSize": 8,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "auto",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  }
-                ]
-              }
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
             },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 7,
-            "w": 9,
-            "x": 8,
-            "y": 9
-          },
-          "id": 122,
-          "links": [
-            {
-              "targetBlank": true,
-              "title": "PR Cycle Time",
-              "url": "https://devlake.apache.org/docs/Metrics/PRCycleTime"
-            }
-          ],
-          "options": {
-            "legend": {
-              "calcs": [
-                "mean"
-              ],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "maxHeight": 600,
-              "mode": "single",
-              "sort": "none"
+            "thresholdsStyle": {
+              "mode": "off"
             }
           },
-          "pluginVersion": "8.0.6",
-          "targets": [
-            {
-              "datasource": {
-                "type": "mysql",
-                "uid": "mysql"
-              },
-              "editorMode": "code",
-              "format": "table",
-              "group": [],
-              "hide": false,
-              "metricColumn": "none",
-              "rawQuery": true,
-              "rawSql": "with _prs as(\n  SELECT\n    pr.id,\n    prm.pr_created_date,\n    prm.pr_merged_date \n    \n  FROM pull_requests pr\n    left join project_pr_metrics prm on pr.id = prm.id\n    join project_mapping pm on pr.base_repo_id = pm.row_id and pm.table = 'repos' \n  WHERE\n    $__timeFilter(pr.merged_date)\n    and pm.project_name in (${project})\n  GROUP BY 1,2,3\n)\n\nSELECT \n  DATE_ADD(date(pr_merged_date), INTERVAL - $interval(date(pr_merged_date))+1 DAY) as time,\n  avg(TIMESTAMPDIFF(Minute,pr_created_date,pr_merged_date)/1440) as 'PR Review Time'\nFROM _prs\nGROUP BY 1\nORDER BY 1",
-              "refId": "A",
-              "select": [
-                [
-                  {
-                    "params": [
-                      "id"
-                    ],
-                    "type": "column"
-                  }
-                ]
-              ],
-              "sql": {
-                "columns": [
-                  {
-                    "parameters": [],
-                    "type": "function"
-                  }
-                ],
-                "groupBy": [
-                  {
-                    "property": {
-                      "type": "string"
-                    },
-                    "type": "groupBy"
-                  }
-                ],
-                "limit": 50
-              },
-              "table": "ae_projects",
-              "timeColumn": "ae_create_time",
-              "timeColumnType": "timestamp",
-              "where": [
-                {
-                  "name": "$__timeFilter",
-                  "params": [],
-                  "type": "macro"
-                }
-              ]
-            }
-          ],
-          "title": "From PR raised to PR Merged",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "default": false,
-            "type": "mysql",
-            "uid": "mysql"
-          },
-          "description": "",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "fixedColor": "light-orange",
-                "mode": "fixed"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisGridShow": false,
-                "axisLabel": "Days",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "barWidthFactor": 0.6,
-                "drawStyle": "line",
-                "fillOpacity": 100,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "smooth",
-                "lineWidth": 1,
-                "pointSize": 8,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "auto",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  }
-                ]
-              }
-            },
-            "overrides": [
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
               {
-                "matcher": {
-                  "id": "byName",
-                  "options": "PR: Opened"
-                },
-                "properties": [
-                  {
-                    "id": "color",
-                    "value": {
-                      "fixedColor": "red",
-                      "mode": "fixed"
-                    }
-                  }
-                ]
-              },
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 7,
+        "x": 1,
+        "y": 9
+      },
+      "id": 120,
+      "links": [
+        {
+          "targetBlank": true,
+          "title": "PR Coding Time",
+          "url": "https://devlake.apache.org/docs/Metrics/PRCodingTime"
+        }
+      ],
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "maxHeight": 600,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "8.0.6",
+      "targets": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "mysql"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "group": [],
+          "hide": false,
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "WITH _prs AS (\n  SELECT\n    pr.id,\n    pr.merged_date AS pr_merged_date,\n    -- Correcting from minutes to days (/1440 instead of /60)\n    COALESCE(prm.pr_coding_time/1440, 0) AS coding_time\n  FROM pull_requests pr\n  JOIN project_pr_metrics prm ON pr.id = prm.id\n  JOIN project_mapping pm ON pr.base_repo_id = pm.row_id AND pm.table = 'repos'\n  WHERE\n    $__timeFilter(pr.merged_date)\n    AND pm.project_name IN (${project})\n  GROUP BY 1,2,3\n)\nSELECT \n  DATE_ADD(DATE(pr_merged_date), INTERVAL - $interval(DATE(pr_merged_date)) + 1 DAY) AS time,\n  AVG(coding_time) AS 'Coding Time (d)'\nFROM _prs\nGROUP BY 1\nORDER BY 1;\n",
+          "refId": "A",
+          "select": [
+            [
               {
-                "matcher": {
-                  "id": "byName",
-                  "options": "PR: Merged"
+                "params": [
+                  "id"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
                 },
-                "properties": [
-                  {
-                    "id": "color",
-                    "value": {
-                      "fixedColor": "super-light-green",
-                      "mode": "fixed"
-                    }
-                  }
-                ]
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "table": "ae_projects",
+          "timeColumn": "ae_create_time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "From initial commit to PR raised",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "default": false,
+        "type": "mysql",
+            "uid": "mysql"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#32add9",
+            "mode": "fixed"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisGridShow": false,
+            "axisLabel": "Days",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 100,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 8,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 9,
+        "x": 8,
+        "y": 9
+      },
+      "id": 122,
+      "links": [
+        {
+          "targetBlank": true,
+          "title": "PR Cycle Time",
+          "url": "https://devlake.apache.org/docs/Metrics/PRCycleTime"
+        }
+      ],
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "maxHeight": 600,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "8.0.6",
+      "targets": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "mysql"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "group": [],
+          "hide": false,
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "WITH _prs AS (\n  SELECT\n    pr.id,\n    prm.pr_created_date,\n    prm.pr_merged_date\n  FROM pull_requests pr\n  JOIN project_pr_metrics prm ON pr.id = prm.id\n  JOIN project_mapping pm ON pr.base_repo_id = pm.row_id AND pm.table = 'repos'\n  WHERE\n    $__timeFilter(pr.merged_date)\n    AND pm.project_name IN (${project})\n  GROUP BY 1,2,3\n)\nSELECT \n  DATE_ADD(DATE(pr_merged_date), INTERVAL - $interval(DATE(pr_merged_date)) + 1 DAY) AS time,\n  AVG(TIMESTAMPDIFF(MINUTE, pr_created_date, pr_merged_date) / 1440) AS 'PR Review Time (d)'\nFROM _prs\nGROUP BY 1\nORDER BY 1;\n",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "id"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "table": "ae_projects",
+          "timeColumn": "ae_create_time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "From PR raised to PR Merged",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "default": false,
+        "type": "mysql",
+            "uid": "mysql"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "light-orange",
+            "mode": "fixed"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisGridShow": false,
+            "axisLabel": "Days",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 100,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 8,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "PR: Opened"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
               }
             ]
           },
-          "gridPos": {
-            "h": 7,
-            "w": 7,
-            "x": 17,
-            "y": 9
-          },
-          "id": 119,
-          "links": [
-            {
-              "targetBlank": true,
-              "title": "PR Deploy Time",
-              "url": "https://devlake.apache.org/docs/Metrics/PRDeployTime"
-            }
-          ],
-          "options": {
-            "legend": {
-              "calcs": [
-                "mean"
-              ],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": true
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "PR: Merged"
             },
-            "tooltip": {
-              "maxHeight": 600,
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "pluginVersion": "8.0.6",
-          "targets": [
-            {
-              "datasource": {
-                "type": "mysql",
-                "uid": "mysql"
-              },
-              "editorMode": "code",
-              "format": "table",
-              "group": [],
-              "hide": false,
-              "metricColumn": "none",
-              "rawQuery": true,
-              "rawSql": "with _prs as(\n  SELECT\n    pr.id,\n    pr.merged_date as pr_merged_date,\n    -- convert null to 0 if a PR has no deploy_time to make sure cycle_time equals the sum of the four sub-metrics\n\t\tcoalesce(prm.pr_deploy_time/1440,0) as deploy_time\n  FROM pull_requests pr\n    left join project_pr_metrics prm on pr.id = prm.id\n    join project_mapping pm on pr.base_repo_id = pm.row_id and pm.table = 'repos' \n  WHERE\n    $__timeFilter(pr.merged_date)\n    and pr.merged_date >= DATE_ADD(DATE_ADD($__timeFrom(), INTERVAL -DAY($__timeFrom())+1 DAY), INTERVAL +1 MONTH)\n    and pm.project_name in (${project})\n  GROUP BY 1,2,3\n)\n\nSELECT \n  DATE_ADD(date(pr_merged_date), INTERVAL -$interval(date(pr_merged_date))+1 DAY) as time,\n  avg(deploy_time) as 'PR Deploy Time(days)'\nFROM _prs\nGROUP BY 1\nORDER BY 1",
-              "refId": "A",
-              "select": [
-                [
-                  {
-                    "params": [
-                      "id"
-                    ],
-                    "type": "column"
-                  }
-                ]
-              ],
-              "sql": {
-                "columns": [
-                  {
-                    "parameters": [],
-                    "type": "function"
-                  }
-                ],
-                "groupBy": [
-                  {
-                    "property": {
-                      "type": "string"
-                    },
-                    "type": "groupBy"
-                  }
-                ],
-                "limit": 50
-              },
-              "table": "ae_projects",
-              "timeColumn": "ae_create_time",
-              "timeColumnType": "timestamp",
-              "where": [
-                {
-                  "name": "$__timeFilter",
-                  "params": [],
-                  "type": "macro"
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "super-light-green",
+                  "mode": "fixed"
                 }
-              ]
-            }
-          ],
-          "title": "From PR merged to changes deployed",
-          "type": "timeseries"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 7,
+        "x": 17,
+        "y": 9
+      },
+      "id": 119,
+      "links": [
+        {
+          "targetBlank": true,
+          "title": "PR Deploy Time",
+          "url": "https://devlake.apache.org/docs/Metrics/PRDeployTime"
         }
       ],
-      "title": "Where is time spent in this process? ",
-      "type": "row"
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "maxHeight": 600,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "8.0.6",
+      "targets": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "mysql"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "group": [],
+          "hide": false,
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "WITH _prs AS (\n  SELECT\n    pr.id,\n    pr.merged_date AS pr_merged_date,\n    -- Correcting from minutes to days (/1440 instead of /60)\n    COALESCE(prm.pr_deploy_time/1440, 0) AS deploy_time\n  FROM pull_requests pr\n  LEFT JOIN project_pr_metrics prm ON pr.id = prm.id\n  JOIN project_mapping pm ON pr.base_repo_id = pm.row_id AND pm.table = 'repos'\n  WHERE\n    $__timeFilter(pr.merged_date)\n    AND pm.project_name IN (${project})\n  GROUP BY 1,2,3\n)\nSELECT \n  DATE_ADD(DATE(pr_merged_date), INTERVAL - $interval(DATE(pr_merged_date)) + 1 DAY) AS time,\n  AVG(deploy_time) AS 'PR Deploy Time (d)'\nFROM _prs\nGROUP BY 1\nORDER BY 1;\n",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "id"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "table": "ae_projects",
+          "timeColumn": "ae_create_time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "From PR merged to changes deployed",
+      "type": "timeseries"
     }
   ],
   "refresh": "",
@@ -716,9 +715,9 @@
       },
       {
         "current": {
-          "selected": false,
-          "text": "Month",
-          "value": "DAYOFMONTH"
+          "selected": true,
+          "text": "Week",
+          "value": "WEEKDAY"
         },
         "description": "",
         "hide": 0,
@@ -728,12 +727,12 @@
         "name": "interval",
         "options": [
           {
-            "selected": true,
+            "selected": false,
             "text": "Month",
             "value": "DAYOFMONTH"
           },
           {
-            "selected": false,
+            "selected": true,
             "text": "Week",
             "value": "WEEKDAY"
           }
@@ -746,13 +745,13 @@
     ]
   },
   "time": {
-    "from": "now-180d",
+    "from": "now-6M",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "utc",
   "title": "Where is time spent on the path to production?",
   "uid": "pr-lead-time-for-changes",
-  "version": 8,
+  "version": 10,
   "weekStart": ""
 }
