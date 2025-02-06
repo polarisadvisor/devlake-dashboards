@@ -59,7 +59,7 @@ jobs:
         run: |
           GIT_SHA=${{ github.sha }}
           docker buildx build ./dashboard-testing \
-            --file docker/Dockerfile \
+            --file dashboard-testing/docker/Dockerfile \
             --platform linux/amd64,linux/arm64 \
             --tag polarisadvisor/dashboard-testing:latest \
             --tag polarisadvisor/dashboard-testing:$GIT_SHA \
