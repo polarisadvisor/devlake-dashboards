@@ -1,3 +1,23 @@
+# CI/CD Pipeline for Dashboard Testing and Deployment
+#
+# This workflow automates the testing and deployment of the devlake-dashboards.
+#
+# **Workflow Overview:**
+# 1. **Check Dependencies:** Detects if `poetry.lock` has changed. This triggers a build and push of the latest dashboard-testing base image.
+# 2. **Build dashboard-testing Image (If Needed):** If `poetry.lock` changed, rebuilds and pushes `polarisadvisor/dashboard-testing`.
+# 3. **Run Tests:** Always runs tests using the latest `dashboard-testing` image. It waits until the previous step completes in needed.
+# 4. **Build & Push devlake-dashboards:** Only runs if tests succeed.
+#
+# **Key Design Decisions:**
+# - `build-dashboard-testing` runs **only if `poetry.lock` changes**, preventing unnecessary builds.
+# - `run-tests` **always runs**, even if `build-dashboard-testing` was skipped, ensuring tests validate the latest image.
+# - `build-devlake-dashboards` only runs **if tests succeed** but **always evaluates its condition** using `always()`, preventing it from being skipped when `build-dashboard-testing` is skipped.
+#
+# This setup ensures that:
+# - Images are only rebuilt when necessary.
+# - Tests always run against the latest available image.
+# - The final dashboard image is only pushed if tests pass.
+
 name: CI/CD for Dashboard Testing
 
 on:
