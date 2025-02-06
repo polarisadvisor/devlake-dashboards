@@ -76,11 +76,11 @@ jobs:
         run: docker pull polarisadvisor/dashboard-testing:latest
 
       - name: Run tests
-        run: docker compose up --exit-code-from tests --abort-on-container-exit --file dashboard-testing/docker-compose.yml
+        run: docker compose -f dashboard-testing/docker-compose.yml up  --exit-code-from tests --abort-on-container-exit
 
       - name: Cleanup
         if: always()
-        run: docker compose down --volumes
+        run: docker compose -f dashboard-testing/docker-compose.yml down  --volumes
 
   build-devlake-dashboards:
     runs-on: ubuntu-latest
