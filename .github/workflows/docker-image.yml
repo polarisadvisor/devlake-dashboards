@@ -40,7 +40,7 @@ jobs:
   build-dashboard-testing:
     runs-on: ubuntu-latest
     needs: check-dependencies
-    #if: needs.check-dependencies.outputs.poetry_lock_changed == 'true'  # Build only if poetry.lock changed
+    if: needs.check-dependencies.outputs.poetry_lock_changed == 'true'  # Build only if poetry.lock changed
 
     steps:
       - name: Checkout repository
@@ -78,8 +78,9 @@ jobs:
       - name: Use Docker Compose
         uses: adambirds/docker-compose-action@v1.5.0
         with:
-          up: tests
-          down: true
+          compose-file: './dashboard-testing/docker-compose.yml'
+          services: tests
+          down-flags: --volumes
           pull: true
 
   build-devlake-dashboards:
