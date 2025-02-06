@@ -58,8 +58,8 @@ jobs:
       - name: Build and push dashboard-testing image
         run: |
           GIT_SHA=${{ github.sha }}
-          docker buildx build . \
-            --file dashboard-testing/docker/Dockerfile \
+          docker buildx build ./dashboard-testing \
+            --file docker/Dockerfile \
             --platform linux/amd64,linux/arm64 \
             --tag polarisadvisor/dashboard-testing:latest \
             --tag polarisadvisor/dashboard-testing:$GIT_SHA \
@@ -67,7 +67,7 @@ jobs:
 
   run-tests:
     runs-on: ubuntu-latest
-    needs: check-dependencies  # Ensure the test image is available
+    needs: [check-dependencies, build-dashboard-testing]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
