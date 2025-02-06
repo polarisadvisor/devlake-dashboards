@@ -67,7 +67,7 @@ jobs:
 
   run-tests:
     runs-on: ubuntu-latest
-    needs: [check-dependencies, build-dashboard-testing]
+    needs: [check-dependencies]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
