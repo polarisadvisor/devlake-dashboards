@@ -67,7 +67,7 @@ jobs:
 
   run-tests:
     runs-on: ubuntu-latest
-    needs: build-dashboard-testing  # Ensure the test image is available
+    needs: check-dependencies  # Ensure the test image is available
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
