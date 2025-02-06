@@ -76,7 +76,7 @@ jobs:
         run: docker pull polarisadvisor/dashboard-testing:latest
 
       - name: Run tests
-        run: docker compose up --exit-code-from-tests --abort-on-container-exit
+        run: docker compose up --exit-code-from tests --abort-on-container-exit
 
       - name: Cleanup
         if: always()
