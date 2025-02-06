@@ -18,7 +18,7 @@ services:
         context: .
         dockerfile: docker/Dockerfile
 
-    image: dashboard-testing:latest
+    image: polarisadvisor/dashboard-testing:latest
     depends_on:
       - mysql
     environment:

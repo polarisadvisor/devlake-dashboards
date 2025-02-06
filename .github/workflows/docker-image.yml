@@ -75,13 +75,12 @@ jobs:
       - name: Pull the latest dashboard-testing image
         run: docker pull polarisadvisor/dashboard-testing:latest
 
-      - name: Use Docker Compose
-        uses: adambirds/docker-compose-action@v1.5.0
-        with:
-          compose-file: './dashboard-testing/docker-compose.yml'
-          services: tests
-          down-flags: --volumes
-          pull: true
+      - name: Run tests
+        run: docker compose up --exit-code-from-tests --abort-on-container-exit
+
+      - name: Cleanup
+        if: always()
+        run: docker compose down --volumes
 
   build-devlake-dashboards:
     runs-on: ubuntu-latest
