@@ -40,7 +40,7 @@ jobs:
   build-dashboard-testing:
     runs-on: ubuntu-latest
     needs: check-dependencies
-    if: needs.check-dependencies.outputs.poetry_lock_changed == 'true'  # Build only if poetry.lock changed
+    #if: needs.check-dependencies.outputs.poetry_lock_changed == 'true'  # Build only if poetry.lock changed
 
     steps:
       - name: Checkout repository
