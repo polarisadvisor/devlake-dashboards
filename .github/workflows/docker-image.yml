@@ -75,6 +75,11 @@ jobs:
       - name: Pull the latest dashboard-testing image
         run: docker pull polarisadvisor/dashboard-testing:latest
 
+      - name: Set up Docker Compose
+        uses: docker/compose-action@v2
+        with:
+          compose-file: dashboard-testing/docker-compose.yml
+
       - name: Run Tests
         run: docker-compose up --abort-on-container-exit --exit-code-from tests tests
 
