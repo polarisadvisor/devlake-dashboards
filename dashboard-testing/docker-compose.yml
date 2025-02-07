@@ -22,8 +22,11 @@ services:
     depends_on:
       - mysql
     environment:
-      DATABASE_URL: mysql://test:test@mysql:3306/devlake
+      DATABASE_URL: mysql+pymysql://test:test@mysql:3306/lake
+      PYTHONPATH: /app
+
     volumes:
       - .:/app  # Mount the entire project directory
     working_dir: /app
     entrypoint: ["/bin/bash", "docker/entrypoint.sh"]
+
