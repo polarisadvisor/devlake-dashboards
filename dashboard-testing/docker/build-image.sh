@@ -17,9 +17,9 @@ else
 fi
 
 echo "Building the Docker image..."
-docker-compose build tests
+docker compose build tests
 
 echo "Extracting poetry.lock from the built image..."
-docker run --rm dashboard-testing:latest cat /poetry.lock > poetry.lock
+docker run --rm polarisadvisor/dashboard-testing:latest cat /poetry.lock > poetry.lock
 
 echo "poetry.lock synced"
