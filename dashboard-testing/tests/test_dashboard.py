@@ -6,15 +6,18 @@ import random
 from datetime import datetime, timedelta
 from sqlalchemy import text
 
+
 @pytest.fixture(scope='module')
 def fixture_path(request):
     """Returns the absolute path to the test fixtures directory."""
     return os.path.join(os.path.dirname(request.fspath), "fixtures")
 
+
 @pytest.fixture(scope='module')
 def sample_dashboard_path(fixture_path):
     """Fixture to provide the path to the actual sample dashboard JSON file."""
     return os.path.join(fixture_path, "sample_dashboard.json")
+
 
 @pytest.fixture(scope="module")  # Runs once per test module
 def dashboard(sample_dashboard_path):
@@ -30,8 +33,10 @@ def test_dashboard_variables(dashboard):
     """Test that the Dashboard correctly loads the actual file and extracts variables."""
     assert dashboard.variables == ["$project", "$interval"]
 
+
 def test_dashboard_panels(dashboard):
     assert len(dashboard.panels) == 3
+
 
 def test_preprocess(dashboard):
     raw_sql = """SELECT * FROM projects
@@ -56,6 +61,7 @@ def test_preprocess(dashboard):
                      AND '2024-01-01' < created_at AND created_at < '2024-12-31'
                      AND name = 'MyProject' AND interval = 'DAYOFMONTH'"""
 
+
 class TestExecute:
 
     @pytest.fixture
@@ -64,25 +70,13 @@ class TestExecute:
 
         projects = []
         start_date = datetime(2024, 1, 1)
-        end_date = datetime(2024, 12, 1)
 
-
-
-        # Generate additional random projects
-        for i in range(10):  # 8 more projects to make 10 total
-            name = f"project_{i + 3}"  # Avoid clashing with "project_a" and "project_b"
-
-            # Ensure at least 3 projects are created in May 2024
-            if i < 3:
-                created_at = datetime(2024, 5, random.randint(1, 31))  # Random May date
-            else:
-                random_days = random.randint(0, (end_date - start_date).days)
-                created_at = start_date + timedelta(days=random_days)
-
+        for i in range(10):
+            name = f"project_{i}"
+            created_at = start_date + timedelta(weeks=i)
             projects.append(Project(name=name, created_at=created_at))
 
         # Add all projects to the session
-
         db_session.add_all(projects)
         db_session.flush()
 
@@ -100,5 +94,3 @@ class TestExecute:
             time_filter_to="2024-12-31"
         )
         assert len(result.fetchall()) == 10
-
-
