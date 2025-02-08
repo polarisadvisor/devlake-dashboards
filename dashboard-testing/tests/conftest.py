@@ -89,3 +89,8 @@ def clean_db(engine):
     # Base.metadata.drop_all(bind=engine)
     # Base.metadata.create_all(bind=engine)
     yield
+
+@pytest.fixture(scope='module')
+def fixture_path(request):
+    """Returns the absolute path to the test fixtures directory."""
+    return os.path.join(os.path.dirname(request.fspath), "fixtures")

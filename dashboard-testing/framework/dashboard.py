@@ -3,6 +3,8 @@ import re
 from jsonpath_ng import parse
 from sqlalchemy import text
 from sqlalchemy.orm import Session
+from sqlalchemy.engine import Result
+
 from typing import Any
 
 class Dashboard:
@@ -81,5 +83,5 @@ class Dashboard:
     @staticmethod
     def execute(session: Session,
                 query: str,
-                **parameters: dict[str, Any]):
+                **parameters) -> Result:
         return session.execute(text(Dashboard.preprocess(query, **parameters)))

@@ -1,16 +1,15 @@
 import pytest
 import os
+from sqlalchemy.engine import Result
+from sqlalchemy.orm import Session
+import pandas as pd
+from typing import Generator, Type
+
 from framework.dashboard import Dashboard
+from framework.pandas_sqlalchemy import insert_dataframe
 from models import Project
-import random
-from datetime import datetime, timedelta
-from sqlalchemy import text
 
 
-@pytest.fixture(scope='module')
-def fixture_path(request):
-    """Returns the absolute path to the test fixtures directory."""
-    return os.path.join(os.path.dirname(request.fspath), "fixtures")
 
 
 @pytest.fixture(scope='module')
@@ -24,9 +23,7 @@ def dashboard(sample_dashboard_path):
     assert os.path.exists(sample_dashboard_path)
 
     dashboard = Dashboard(sample_dashboard_path)
-    yield dashboard  # Hand over the instance to the tests
-    # Teardown (if needed)
-    del dashboard
+    yield dashboard
 
 
 def test_dashboard_variables(dashboard):
@@ -62,35 +59,26 @@ def test_preprocess(dashboard):
                      AND name = 'MyProject' AND interval = 'DAYOFMONTH'"""
 
 
-class TestExecute:
+@pytest.fixture()
+def _query_projects(db_session) -> Generator[pd.DataFrame, None, None]:
+    projects: pd.DataFrame = pd.DataFrame({
+        "name": [f"Project {i}" for i in range(1, 11)],
+        "created_at": pd.date_range(start="2024-01-01", periods=10, freq="D")
+    })
+    insert_dataframe(db_session, projects, Project)
+    yield projects
 
-    @pytest.fixture
-    def setup(self, db_session):
-        """Setup fixture to create 10 projects with different created_at dates."""
 
-        projects = []
-        start_date = datetime(2024, 1, 1)
+def test_query_projects(_query_projects: pd.DataFrame, db_session: Session, dashboard: Dashboard):
+    expected_df: pd.DataFrame = _query_projects
 
-        for i in range(10):
-            name = f"project_{i}"
-            created_at = start_date + timedelta(weeks=i)
-            projects.append(Project(name=name, created_at=created_at))
-
-        # Add all projects to the session
-        db_session.add_all(projects)
-        db_session.flush()
-
-        yield
-
-    def test_execute(self, setup, db_session, dashboard):
-        raw_sql = """SELECT * FROM projects
-                                 WHERE $__timeFilter(created_at) 
-                                 """
-
-        result = dashboard.execute(
-            db_session,
-            raw_sql,
-            time_filter_from="2024-01-01",
-            time_filter_to="2024-12-31"
-        )
-        assert len(result.fetchall()) == 10
+    query: str = """SELECT name,created_at FROM projects
+                                     WHERE $__timeFilter(created_at) 
+                                     """
+    result: Result = dashboard.execute(
+        db_session,
+        query,
+        time_filter_from="2024-01-01",
+        time_filter_to="2024-12-31"
+    )
+    assert len(expected_df) == len(result.fetchall())
