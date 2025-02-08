@@ -43,6 +43,15 @@ class Dashboard:
             for panel in self.panels
         ]
 
+
+    def datasources(self, ds_type: str = 'mysql') -> list[dict]:
+        targets = self.query(f"$.panels..targets[*]")
+        return [
+            target['datasource']
+            for target in targets
+            if target['datasource']['type'] == ds_type
+        ]
+
     @staticmethod
     def preprocess(
             sql_query: str,
