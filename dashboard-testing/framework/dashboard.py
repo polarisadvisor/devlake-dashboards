@@ -4,15 +4,16 @@ from jsonpath_ng import parse
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 from sqlalchemy.engine import Result
-
+from pathlib import Path
 from typing import Any
 
+
 class Dashboard:
-    def __init__(self, json_file: str) -> None:
+    def __init__(self, json_file: str | Path) -> None:
         with open(json_file, 'r') as f:
             self.data = json.load(f)
 
-    def query(self, jsonpath_expr: str) -> list[str]:
+    def query(self, jsonpath_expr: str) -> list[Any]:
         """Extract elements using JSONPath notation."""
         expr = parse(jsonpath_expr)
         return [match.value for match in expr.find(self.data)]
@@ -23,9 +24,24 @@ class Dashboard:
         return [f"${name}" for name in self.query("$.templating.list[*].name")]
 
     @property
-    def panels(self):
-        """Extract panel names defined in the dashboard."""
+    def panels(self) -> list[dict]:
+        """Extract top level panels defined in the dashboard."""
         return self.query("$.panels[*]")
+
+    @property
+    def editable(self):
+        return self.data["editable"]
+
+    @property
+    def panel_states(self) -> list[dict]:
+        return [
+            {
+                "title": panel["title"],
+                "type": panel["type"],
+                "collapsed": panel.get("collapsed")
+            }
+            for panel in self.panels
+        ]
 
     @staticmethod
     def preprocess(
