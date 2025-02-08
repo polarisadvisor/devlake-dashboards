@@ -2,13 +2,15 @@ import json
 import re
 from jsonpath_ng import parse
 from sqlalchemy import text
+from sqlalchemy.orm import Session
+from typing import Any
 
 class Dashboard:
-    def __init__(self, json_file):
+    def __init__(self, json_file: str) -> None:
         with open(json_file, 'r') as f:
             self.data = json.load(f)
 
-    def query(self, jsonpath_expr):
+    def query(self, jsonpath_expr: str) -> list[str]:
         """Extract elements using JSONPath notation."""
         expr = parse(jsonpath_expr)
         return [match.value for match in expr.find(self.data)]
@@ -25,14 +27,14 @@ class Dashboard:
 
     @staticmethod
     def preprocess(
-            sql_query,
-            time_filter_from="1970-01-01",
-            time_filter_to="NOW()",
-            time_from="1970-01-01",
-            time_to="NOW()",
-            unix_epoch_from="1970-01-01",
-            unix_epoch_to="NOW()",
-            **kwargs  # Arbitrary dashboard-defined substitutions (e.g., project, interval)
+            sql_query: str,
+            time_filter_from: str = "1970-01-01",
+            time_filter_to: str = "NOW()",
+            time_from: str = "1970-01-01",
+            time_to: str = "NOW()",
+            unix_epoch_from: str = "1970-01-01",
+            unix_epoch_to: str = "NOW()",
+            **kwargs: dict[str:Any]  # Arbitrary dashboard-defined substitutions (e.g., project, interval)
     ):
         """
         Preprocess SQL by expanding built-in macros and substituting additional variables.
@@ -48,7 +50,7 @@ class Dashboard:
         :return: SQL query with macros expanded and custom variables substituted.
         """
 
-        def replace_time_filter(match):
+        def replace_time_filter(match: re.Match) -> str:
             column = match.group(1)
             return f"{column} BETWEEN '{time_filter_from}' AND '{time_filter_to}'"
 
@@ -77,7 +79,7 @@ class Dashboard:
         return sql_query
 
     @staticmethod
-    def execute(session,
-                query,
-                **parameters):
+    def execute(session: Session,
+                query: str,
+                **parameters: dict[str, Any]):
         return session.execute(text(Dashboard.preprocess(query, **parameters)))
