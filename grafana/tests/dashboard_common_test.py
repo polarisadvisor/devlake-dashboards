@@ -1,7 +1,7 @@
 import pytest
 from pathlib import Path
 from framework.dashboard import Dashboard
-from conftest import dashboard_dir
+from .conftest import dashboard_dir
 
 def get_dashboard_files(module_path):
     """Get all dashboard JSON files relative to the test module."""

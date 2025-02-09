@@ -52,7 +52,7 @@ jobs:
       - name: Check if poetry.lock has changed
         id: check_lock
         run: |
-          if git diff --name-only HEAD^ HEAD | grep "dashboard-testing/poetry.lock"; then
+          if git diff --name-only HEAD^ HEAD | grep "dashboard_testing/poetry.lock"; then
             echo "poetry.lock changed, triggering build."
             echo "changed=true" >> $GITHUB_OUTPUT
           else
@@ -81,8 +81,8 @@ jobs:
       - name: Build and push dashboard-testing image
         run: |
           GIT_SHA=${{ github.sha }}
-          docker buildx build ./dashboard-testing \
-            --file dashboard-testing/docker/Dockerfile \
+          docker buildx build ./dashboard_testing \
+            --file dashboard_testing/docker/Dockerfile \
             --platform linux/amd64,linux/arm64 \
             --tag polarisadvisor/dashboard-testing:latest \
             --tag polarisadvisor/dashboard-testing:$GIT_SHA \
@@ -100,11 +100,11 @@ jobs:
         run: docker pull polarisadvisor/dashboard-testing:latest
 
       - name: Run tests
-        run: docker compose -f dashboard-testing/docker-compose.yml up  --exit-code-from tests --abort-on-container-exit
+        run: docker compose  up  --exit-code-from tests --abort-on-container-exit
 
       - name: Cleanup
         if: always()
-        run: docker compose -f dashboard-testing/docker-compose.yml down  --volumes
+        run: docker compose  down  --volumes
 
   build-devlake-dashboards:
     runs-on: ubuntu-latest
