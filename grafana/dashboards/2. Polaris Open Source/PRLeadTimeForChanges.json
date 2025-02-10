@@ -283,7 +283,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   }
                 ]
               }
@@ -430,7 +431,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   }
                 ]
               }
@@ -577,7 +579,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   }
                 ]
               }
@@ -718,7 +721,7 @@
     "list": [
       {
         "current": {
-          "selected": true,
+          "selected": false,
           "text": [
             "All"
           ],
@@ -747,33 +750,33 @@
       {
         "current": {
           "selected": true,
-          "text": "Month",
+          "text": "One Month",
           "value": "DAYOFMONTH"
         },
         "description": "",
         "hide": 0,
         "includeAll": false,
-        "label": "Group By",
+        "label": "Observation window",
         "multi": false,
         "name": "interval",
         "options": [
           {
             "selected": true,
-            "text": "Month",
+            "text": "One Month",
             "value": "DAYOFMONTH"
           },
           {
             "selected": false,
-            "text": "Week",
+            "text": "One Week",
             "value": "WEEKDAY"
           },
           {
             "selected": false,
-            "text": "Day",
+            "text": "One Day",
             "value": "DAY"
           }
         ],
-        "query": "Month : DAYOFMONTH, Week : WEEKDAY, Day :  DAY",
+        "query": "One Month : DAYOFMONTH, One Week : WEEKDAY, One Day :  DAY",
         "queryValue": "",
         "skipUrlSync": false,
         "type": "custom"
@@ -788,6 +791,6 @@
   "timezone": "utc",
   "title": "Where is time spent on the path to production?",
   "uid": "pr-lead-time-for-changes",
-  "version": 13,
+  "version": 14,
   "weekStart": ""
 }
