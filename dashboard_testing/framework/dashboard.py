@@ -7,6 +7,11 @@ from sqlalchemy.engine import Result
 from pathlib import Path
 from typing import Any
 
+class Panel:
+    def __init__(self, panel_id: int, datasource: str, targets: list[dict]):
+        self.panel_id = panel_id
+        self.datasource = datasource
+        self.targets = targets
 
 class Dashboard:
     def __init__(self, json_file: str | Path) -> None:
@@ -52,6 +57,15 @@ class Dashboard:
             if target['datasource']['type'] == ds_type
         ]
 
+    def find_panel_by_id(self, panel_id: int) -> Panel | None:
+        panels = self.query("$.panels[*]")
+        for panel in panels:
+            if panel['id'] == panel_id:
+                return Panel(panel['id'], panel['datasource'], panel['targets'])
+
+    def panel_sql(self, panel_id: int):
+        return self.query(f"$.panels[*].targets[*].rawSql where parent.parent.id == {panel_id}")
+
     @staticmethod
     def preprocess(
             sql_query: str,
@@ -79,7 +93,7 @@ class Dashboard:
 
         def replace_time_filter(match: re.Match) -> str:
             column = match.group(1)
-            return f"{column} BETWEEN '{time_filter_from}' AND '{time_filter_to}'"
+            return f"{column} BETWEEN {time_filter_from} AND {time_filter_to}"
 
         # Built-in Grafana macros (explicit replacements)
         replacements = {
@@ -101,7 +115,10 @@ class Dashboard:
 
         # Apply additional user-defined substitutions (e.g., $project → 'my_project')
         for key, value in kwargs.items():
-            sql_query = sql_query.replace(f"${key}", f"'{value}'")
+            # support variables of the form ${variable}
+            sql_query = sql_query.replace(f"${{{key}}}", f"{value}")
+            # and also ${variable}
+            sql_query = sql_query.replace(f"${key}", f"{value}")
 
         return sql_query
 
@@ -110,3 +127,7 @@ class Dashboard:
                 query: str,
                 **parameters) -> Result:
         return session.execute(text(Dashboard.preprocess(query, **parameters)))
+
+
+
+
