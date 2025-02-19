@@ -44,11 +44,11 @@ def test_preprocess(dashboard):
 
     result = dashboard.preprocess(
         raw_sql,
-        time_filter_from="2024-01-01",
-        time_filter_to="2024-12-31",
-        time_from="2024-01-01",
-        time_to="2024-12-31",
-        project="MyProject",
+        time_filter_from="'2024-01-01'",
+        time_filter_to="'2024-12-31'",
+        time_from="'2024-01-01'",
+        time_to="'2024-12-31'",
+        project="'MyProject'",
         interval="DAYOFMONTH"
     )
 
@@ -56,7 +56,7 @@ def test_preprocess(dashboard):
                      WHERE created_at BETWEEN '2024-01-01' AND '2024-12-31' 
                      AND DATE_TRUNC('day', created_at) 
                      AND '2024-01-01' < created_at AND created_at < '2024-12-31'
-                     AND name = 'MyProject' AND interval = 'DAYOFMONTH'"""
+                     AND name = 'MyProject' AND interval = DAYOFMONTH"""
 
 
 @pytest.fixture()
@@ -78,7 +78,7 @@ def test_query_projects(_query_projects: pd.DataFrame, db_session: Session, dash
     result: Result = dashboard.execute(
         db_session,
         query,
-        time_filter_from="2024-01-01",
-        time_filter_to="2024-12-31"
+        time_filter_from="'2024-01-01'",
+        time_filter_to="'2024-12-31'"
     )
     assert len(expected_df) == len(result.fetchall())

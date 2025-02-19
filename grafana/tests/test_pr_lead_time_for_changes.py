@@ -92,5 +92,13 @@ def test_lead_time_for_changes_query(dashboard: Dashboard, db_session, _pull_req
 
     panel: Panel = dashboard.find_panel_by_id(109)
     panel_sql: str = panel.targets[0]['rawSql']
-    result = dashboard.execute(db_session, panel_sql, project="'TestProject'", interval="DAYOFMONTH").fetchall()
+    result = dashboard.execute(
+        db_session,
+        panel_sql,
+        project="'TestProject'",
+        interval="DAYOFMONTH",
+        timefilterFrom="'2025-02-01'",
+        timefilterTo="NOW()"
+
+    ).fetchall()
     assert len(result) == 1
