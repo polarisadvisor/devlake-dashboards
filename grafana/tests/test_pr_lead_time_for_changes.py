@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 # Author: Krishna Kumar
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime, date
 from typing import Generator
 
 import pytest
 import pandas as pd
-from pandas.core.interchange.dataframe_protocol import DataFrame
+
+
 
 from framework.dashboard import Dashboard, Panel
 from pathlib import Path
 
-from framework.pandas_sqlalchemy import insert_dataframe
+from framework.pandas_sqlalchemy import insert_dataframe, to_dataframe,assert_data_frames_equal, decimal_to_float
 from models import Project, ProjectMapping, PullRequest, ProjectPRMetric
 from sqlalchemy.orm import Session
 from sqlalchemy import text
@@ -34,7 +35,7 @@ def test_panel_states(dashboard):
 
 
 @pytest.fixture(scope="function")
-def _pull_requests(db_session: Session) -> Generator[dict[str,DataFrame], None, None]:
+def _pull_requests(db_session: Session) -> Generator[dict[str,pd.DataFrame], None, None]:
     """Populates test data using Pandas DataFrames and inserts them into the database while maintaining referential integrity."""
 
     # Create project data
@@ -49,29 +50,19 @@ def _pull_requests(db_session: Session) -> Generator[dict[str,DataFrame], None, 
          "updated_at": datetime.now(UTC)}
     ])
 
-    # Add pull requests
-    pr_data = [
-        {
-            "id": f"PR_{i}",
-            "base_repo_id": "repo_1",
-            "merged_date": datetime.now(UTC) - timedelta(days=i * 2),
-            "created_date": datetime.now(UTC) - timedelta(days=i * 3),
-        }
-        for i in range(1, 6)
-    ]
-    pull_requests_df = pd.DataFrame(pr_data)
+    pull_requests_df = pd.DataFrame({
+        "id": ["PR_1", "PR_2", "PR_3", "PR_4", "PR_5"],
+        "base_repo_id": ["repo_1", "repo_1", "repo_1", "repo_1", "repo_1"],
+        "created_date": ["2025-01-01", "2025-01-04", "2025-01-06", "2025-01-08", "2025-01-10"],
+        "merged_date" : ["2025-01-03", "2025-01-05", "2025-01-07", "2025-01-09", "2025-01-11"],
+    })
 
-    # Add PR metrics
-    pr_metrics_data = [
-        {
-            "id": f"PR_{i}",
-            "project_name": "TestProject",
-            "pr_cycle_time": i * 1440,  # Simulated cycle time in minutes
-            "pr_merged_date": datetime.now(UTC) - timedelta(days=i * 2),
-        }
-        for i in range(1, 6)
-    ]
-    pr_metrics_df = pd.DataFrame(pr_metrics_data)
+    pr_metrics_df = pd.DataFrame({
+        "id": ["PR_1", "PR_2", "PR_3", "PR_4", "PR_5"],
+        "project_name": ["TestProject", "TestProject", "TestProject", "TestProject", "TestProject"],
+        "pr_cycle_time": [1440*2, 1440, 1440, 1440, 1440],
+        "pr_merged_date": ["2025-01-03", "2025-01-05", "2025-01-07", "2025-01-09", "2025-01-11"]
+    })
 
     # Insert data into the database while respecting referential integrity
     insert_dataframe(db_session, projects_df, Project)
@@ -92,13 +83,25 @@ def test_lead_time_for_changes_query(dashboard: Dashboard, db_session, _pull_req
 
     panel: Panel = dashboard.find_panel_by_id(109)
     panel_sql: str = panel.targets[0]['rawSql']
-    result = dashboard.execute(
+    result: pd.DataFrame = to_dataframe(dashboard.execute(
         db_session,
         panel_sql,
         project="'TestProject'",
         interval="DAYOFMONTH",
-        timefilterFrom="'2025-02-01'",
-        timefilterTo="NOW()"
+        time_filter_from="'2025-01-01'",
+        time_filter_to="NOW()"
 
-    ).fetchall()
-    assert len(result) == 1
+    ))
+    #awkward column name, so using a constant here.
+    lead_time_for_changes: str = 'Avg. Lead Time for Changes (d)'
+    expected = pd.DataFrame({
+        'time': [date(2025,1,1)],
+        lead_time_for_changes: [1.2],
+        'Count': [5]
+    })
+
+    assert_data_frames_equal(
+        # convert Decimal values in result to floats so that can be compared approximately
+        decimal_to_float(result, lead_time_for_changes),
+        expected
+    )
