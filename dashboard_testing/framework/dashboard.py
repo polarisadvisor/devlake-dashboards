@@ -69,16 +69,18 @@ class Dashboard:
     @staticmethod
     def preprocess(
             sql_query: str,
-            time_filter_from: str = "1970-01-01",
+            time_filter_from: str = "'1970-01-01'",
             time_filter_to: str = "NOW()",
-            time_from: str = "1970-01-01",
+            time_from: str = "'1970-01-01'",
             time_to: str = "NOW()",
-            unix_epoch_from: str = "1970-01-01",
+            unix_epoch_from: str = "'1970-01-01'",
             unix_epoch_to: str = "NOW()",
             **kwargs: dict[str:Any]  # Arbitrary dashboard-defined substitutions (e.g., project, interval)
     ):
         """
         Preprocess SQL by expanding built-in macros and substituting additional variables.
+        Note that all date strings passed must be explicitly quoted ie "'1970-01-01'", not "1970-01-01"
+
 
         :param sql_query: The raw SQL query containing macros.
         :param time_filter_from: Start date for $__timeFilter.
@@ -98,12 +100,12 @@ class Dashboard:
         # Built-in Grafana macros (explicit replacements)
         replacements = {
             r"\$__timeFilter\((.*?)\)": replace_time_filter,
-            r"\$__timeFrom": lambda _: f"'{time_from}'",
-            r"\$__timeTo": lambda _: f"'{time_to}'",
+            r"\$__timeFrom": lambda _: f"{time_from}",
+            r"\$__timeTo": lambda _: f"{time_to}",
             r"\$__unixEpochFilter\((.*?)\)": lambda
-                match: f"{match.group(1)} BETWEEN UNIX_TIMESTAMP('{unix_epoch_from}') AND UNIX_TIMESTAMP('{unix_epoch_to}')",
-            r"\$__unixEpochFrom": lambda _: f"UNIX_TIMESTAMP('{unix_epoch_from}')",
-            r"\$__unixEpochTo": lambda _: f"UNIX_TIMESTAMP('{unix_epoch_to}')",
+                match: f"{match.group(1)} BETWEEN UNIX_TIMESTAMP({unix_epoch_from}) AND UNIX_TIMESTAMP({unix_epoch_to})",
+            r"\$__unixEpochFrom": lambda _: f"UNIX_TIMESTAMP({unix_epoch_from})",
+            r"\$__unixEpochTo": lambda _: f"UNIX_TIMESTAMP({unix_epoch_to})",
             r"\$__timeGroup\((.*?),\s*(.*?)\)": lambda match: f"DATE_TRUNC({match.group(2)}, {match.group(1)})",
             r"\$__timeGroupAlias\((.*?),\s*(.*?)\)": lambda
                 match: f"DATE_TRUNC({match.group(2)}, {match.group(1)}) AS time_group",
