@@ -130,7 +130,7 @@ class Dashboard:
         """
          Preprocess SQL query by calling preprocess(), execute it and return the result.
          :param session: SQLAlchemy session object.
-         :param query: SQL query.
+         :param query: Grafana SQL query. Potentially contains macros to expand.
          :param parameters: Grafana macro replacement parameters. - These are directly passed to preprocess. See that method for details.
         """
         return session.execute(text(Dashboard.preprocess(query, **parameters)))
