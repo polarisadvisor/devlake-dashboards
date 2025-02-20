@@ -81,7 +81,6 @@ class Dashboard:
         Preprocess SQL by expanding built-in macros and substituting additional variables.
         Note that all date strings passed must be explicitly quoted ie "'1970-01-01'", not "1970-01-01"
 
-
         :param sql_query: The raw SQL query containing macros.
         :param time_filter_from: Start date for $__timeFilter.
         :param time_filter_to: End date for $__timeFilter.
@@ -128,6 +127,12 @@ class Dashboard:
     def execute(session: Session,
                 query: str,
                 **parameters) -> Result:
+        """
+         Preprocess SQL query by calling preprocess(), execute it and return the result.
+         :param session: SQLAlchemy session object.
+         :param query: SQL query.
+         :param parameters: Grafana macro replacement parameters. - These are directly passed to preprocess. See that method for details.
+        """
         return session.execute(text(Dashboard.preprocess(query, **parameters)))
 
 
