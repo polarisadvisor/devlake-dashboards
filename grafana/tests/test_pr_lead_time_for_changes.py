@@ -96,17 +96,16 @@ class TestPRLeadTimeForChangesPanel:
 
         ))
         assert result.shape == (1,3)
-        #awkward column name, so using a constant here.
-        lead_time_for_changes: str = 'Avg. Lead Time for Changes (d)'
+
         expected = pd.DataFrame({
             'time': [date(2025,1,1)],
-            lead_time_for_changes: [1.2],
-            'Count': [5]
+            'lead_time_for_changes': [1.2],
+            'count': [5]
         })
 
         assert_data_frames_equal(
             # convert Decimal values in result to floats so that can be compared approximately
-            decimal_to_float(result, lead_time_for_changes),
+            decimal_to_float(result, 'lead_time_for_changes'),
             expected
         )
 
@@ -124,17 +123,16 @@ class TestPRLeadTimeForChangesPanel:
 
         ))
         assert result.shape == (2, 3)
-        # awkward column name, so using a constant here.
-        lead_time_for_changes: str = 'Avg. Lead Time for Changes (d)'
+
         expected = pd.DataFrame({
             'time': [date(2024,12,31),date(2025, 1, 7)],
-            lead_time_for_changes: [1.5, 1.0],
-            'Count': [2, 3]
+            'lead_time_for_changes': [1.5, 1.0],
+            'count': [2, 3]
         })
 
         assert_data_frames_equal(
             # convert Decimal values in result to floats so that can be compared approximately
-            decimal_to_float(result, lead_time_for_changes),
+            decimal_to_float(result, 'lead_time_for_changes'),
             expected
         )
 
@@ -152,17 +150,16 @@ class TestPRLeadTimeForChangesPanel:
 
         ))
         assert result.shape == (5, 3)
-        # awkward column name, so using a constant here.
-        lead_time_for_changes: str = 'Avg. Lead Time for Changes (d)'
+
         expected = pd.DataFrame({
             'time': [date(2025, 1, 3), date(2025, 1, 5), date(2025, 1, 7), date(2025, 1, 9), date(2025, 1, 11)],
-            lead_time_for_changes: [2.0, 1.0, 1.0, 1.0, 1.0],
-            'Count': [1, 1, 1, 1, 1]
+            'lead_time_for_changes': [2.0, 1.0, 1.0, 1.0, 1.0],
+            'count': [1, 1, 1, 1, 1]
         })
 
         assert_data_frames_equal(
             # convert Decimal values in result to floats so that can be compared approximately
-            decimal_to_float(result, lead_time_for_changes),
+            decimal_to_float(result, 'lead_time_for_changes'),
             expected
         )
 
@@ -180,17 +177,16 @@ class TestPRLeadTimeForChangesPanel:
 
         ))
         assert result.shape == (3, 3)
-        # awkward column name, so using a constant here.
-        lead_time_for_changes: str = 'Avg. Lead Time for Changes (d)'
+
         expected = pd.DataFrame({
             'time': [date(2025, 1, 3), date(2025, 1, 5), date(2025, 1, 7)],
-            lead_time_for_changes: [2.0, 1.0, 1.0],
-            'Count': [1, 1, 1]
+            'lead_time_for_changes': [2.0, 1.0, 1.0],
+            'count': [1, 1, 1]
         })
 
         assert_data_frames_equal(
             # convert Decimal values in result to floats so that can be compared approximately
-            decimal_to_float(result, lead_time_for_changes),
+            decimal_to_float(result, 'lead_time_for_changes'),
             expected
         )
 
@@ -228,16 +224,15 @@ class TestPRLeadTimeForChangesPanel:
 
         ))
         assert result.shape == (3, 3)
-        # awkward column name, so using a constant here.
-        lead_time_for_changes: str = 'Avg. Lead Time for Changes (d)'
+
         expected = pd.DataFrame({
             'time': [date(2025, 1, 3), date(2025, 1, 5), date(2025, 1, 7)],
-            lead_time_for_changes: [2.0, 1.0, 1.0],
-            'Count': [1, 1, 1]
+            'lead_time_for_changes': [2.0, 1.0, 1.0],
+            'count': [1, 1, 1]
         })
 
         assert_data_frames_equal(
             # convert Decimal values in result to floats so that can be compared approximately
-            decimal_to_float(result, lead_time_for_changes),
+            decimal_to_float(result, 'lead_time_for_changes'),
             expected
         )

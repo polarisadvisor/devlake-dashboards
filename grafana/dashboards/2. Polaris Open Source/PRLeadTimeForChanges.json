@@ -110,7 +110,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Count"
+              "options": "count"
             },
             "properties": [
               {
@@ -128,6 +128,30 @@
                   "mode": "fixed",
                   "seriesBy": "max"
                 }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "lead_time_for_changes"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Avg. Lead Time for Changes (d)"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "count"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Count"
               }
             ]
           }
@@ -177,7 +201,7 @@
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "WITH _prs AS (\n  SELECT\n    pr.id,\n    pr.merged_date AS pr_merged_date,\n  \n    COALESCE(prm.pr_cycle_time/1440, 0) AS cycle_time\n  FROM pull_requests pr\n  -- if a pr does not have a metrics row, we will drop this from the trend rather than skwing this with a zero. We will report on data quality separately, \n  JOIN project_pr_metrics prm ON pr.id = prm.id\n  JOIN project_mapping pm ON pr.base_repo_id = pm.row_id AND pm.table = 'repos'\n  WHERE\n    $__timeFilter(pr.merged_date)\n    AND pm.project_name IN (${project})\n  GROUP BY 1,2,3\n)\nSELECT \n  CASE \n    WHEN '${interval}' = 'DAY' THEN DATE(pr_merged_date)\n    ELSE DATE_ADD(DATE(pr_merged_date), INTERVAL - $interval(DATE(pr_merged_date)) + 1 DAY) \n  END AS time,\n  AVG(cycle_time) AS 'Avg. Lead Time for Changes (d)',\n  Count(_prs.id) as 'Count'\nFROM _prs\nGROUP BY 1\nORDER BY 1;\n",
+          "rawSql": "WITH _prs AS (\n  SELECT\n    pr.id,\n    pr.merged_date AS pr_merged_date,\n  \n    COALESCE(prm.pr_cycle_time/1440, 0) AS cycle_time\n  FROM pull_requests pr\n  -- if a pr does not have a metrics row, we will drop this from the trend rather than skwing this with a zero. We will report on data quality separately, \n  JOIN project_pr_metrics prm ON pr.id = prm.id\n  JOIN project_mapping pm ON pr.base_repo_id = pm.row_id AND pm.table = 'repos'\n  WHERE\n    $__timeFilter(pr.merged_date)\n    AND pm.project_name IN (${project})\n  GROUP BY 1,2,3\n)\nSELECT \n  CASE \n    WHEN '${interval}' = 'DAY' THEN DATE(pr_merged_date)\n    ELSE DATE_ADD(DATE(pr_merged_date), INTERVAL - $interval(DATE(pr_merged_date)) + 1 DAY) \n  END AS time,\n  AVG(cycle_time) AS 'lead_time_for_changes',\n  Count(_prs.id) as 'count'\nFROM _prs\nGROUP BY 1\nORDER BY 1;\n",
           "refId": "A",
           "select": [
             [
@@ -721,7 +745,7 @@
     "list": [
       {
         "current": {
-          "selected": false,
+          "selected": true,
           "text": [
             "All"
           ],
@@ -791,6 +815,6 @@
   "timezone": "utc",
   "title": "Where is time spent on the path to production?",
   "uid": "pr-lead-time-for-changes",
-  "version": 14,
+  "version": 20,
   "weekStart": ""
 }
