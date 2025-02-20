@@ -16,10 +16,11 @@ def to_dataframe(result: Result) -> pd.DataFrame:
         result.fetchall(), columns=result.keys()
     )
 
-def decimal_to_float(dataframe: pd.DataFrame, column: str) -> pd.DataFrame:
-    dataframe[column] = dataframe[column].apply(
-        lambda x: float(x) if isinstance(x, Decimal) else x
-    )
+def decimal_to_float(dataframe: pd.DataFrame, *columns: str) -> pd.DataFrame:
+    for column in columns:
+        dataframe[column] = dataframe[column].apply(
+            lambda x: float(x) if isinstance(x, Decimal) else x
+        )
     return dataframe
 
 def assert_data_frames_equal(result: pd.DataFrame, expected: pd.DataFrame) -> None:
