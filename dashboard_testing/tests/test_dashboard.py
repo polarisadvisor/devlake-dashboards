@@ -35,7 +35,7 @@ def test_dashboard_panels(dashboard):
     assert len(dashboard.panels) == 3
 
 def test_dashboard_datasources(dashboard):
-    assert len(dashboard.datasources('mysql')) == 4
+    assert len(dashboard.datasources('mysql')) == 8
 
 def test_find_panel_by_id(dashboard):
     # Test finding a regular panel

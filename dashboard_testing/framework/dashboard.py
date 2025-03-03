@@ -50,11 +50,11 @@ class Dashboard:
 
 
     def datasources(self, ds_type: str = 'mysql') -> list[dict]:
-        targets = self.query(f"$.panels..targets[*]")
+        datasources = self.query(f"$.panels..datasource[*]")
         return [
-            target['datasource']
-            for target in targets
-            if target['datasource']['type'] == ds_type
+            datasource
+            for datasource in datasources
+            if datasource['type'] == ds_type
         ]
 
     def find_panel_by_id(self, panel_id: int) -> Panel | None:
