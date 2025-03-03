@@ -52,7 +52,7 @@
       "datasource": {
         "default": false,
         "type": "mysql",
-        "uid": "P430005175C4C7810"
+        "uid": "mysql"
       },
       "description": "",
       "fieldConfig": {
@@ -474,7 +474,20 @@
                 ]
               }
             },
-            "overrides": []
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "review_time"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Avg. Review Time (d)"
+                  }
+                ]
+              }
+            ]
           },
           "gridPos": {
             "h": 7,
@@ -520,7 +533,7 @@
               "hide": false,
               "metricColumn": "none",
               "rawQuery": true,
-              "rawSql": "WITH _prs AS (\n  SELECT\n    pr.id,\n    prm.pr_created_date,\n    prm.pr_merged_date\n  FROM pull_requests pr\n  JOIN project_pr_metrics prm ON pr.id = prm.id\n  JOIN project_mapping pm ON pr.base_repo_id = pm.row_id AND pm.table = 'repos'\n  WHERE\n    $__timeFilter(pr.merged_date)\n    AND pm.project_name IN (${project})\n  GROUP BY 1,2,3\n)\nSELECT \n  CASE \n    WHEN '${interval}' = 'DAY' THEN DATE(pr_merged_date)\n    ELSE DATE_ADD(DATE(pr_merged_date), INTERVAL - $interval(DATE(pr_merged_date)) + 1 DAY) \n  END AS time,\n  AVG(TIMESTAMPDIFF(MINUTE, pr_created_date, pr_merged_date) / 1440) AS 'Avg. Review Time (d)'\nFROM _prs\nGROUP BY 1\nORDER BY 1;\n",
+              "rawSql": "WITH _prs AS (\n  SELECT\n    pr.id,\n    prm.pr_created_date,\n    prm.pr_merged_date\n  FROM pull_requests pr\n  JOIN project_pr_metrics prm ON pr.id = prm.id\n  JOIN project_mapping pm ON pr.base_repo_id = pm.row_id AND pm.table = 'repos'\n  WHERE\n    $__timeFilter(pr.merged_date)\n    AND pm.project_name IN (${project})\n  GROUP BY 1,2,3\n)\nSELECT \n  CASE \n    WHEN '${interval}' = 'DAY' THEN DATE(pr_merged_date)\n    ELSE DATE_ADD(DATE(pr_merged_date), INTERVAL - $interval(DATE(pr_merged_date)) + 1 DAY) \n  END AS time,\n  AVG(TIMESTAMPDIFF(MINUTE, pr_created_date, pr_merged_date) / 1440) AS 'review_time'\nFROM _prs\nGROUP BY 1\nORDER BY 1;\n",
               "refId": "A",
               "select": [
                 [
