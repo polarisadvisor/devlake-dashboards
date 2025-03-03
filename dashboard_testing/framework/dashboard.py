@@ -58,10 +58,33 @@ class Dashboard:
         ]
 
     def find_panel_by_id(self, panel_id: int) -> Panel | None:
-        panels = self.query("$.panels[*]")
-        for panel in panels:
-            if panel['id'] == panel_id:
-                return Panel(panel['id'], panel['datasource'], panel['targets'])
+        """Find a panel by its ID in the dashboard, including nested panels.
+
+        Args:
+            panel_id: The ID of the panel to find
+
+        Returns:
+            Panel object if found, None otherwise
+        """
+        def search_panels(panels: list[dict]) -> Panel | None:
+            for panel in panels:
+                # Check current panel
+                if panel.get('id') == panel_id:
+                    return Panel(
+                        panel['id'],
+                        panel.get('datasource'),  # Some panels might not have datasource
+                        panel.get('targets', [])  # Some panels might not have targets
+                    )
+
+                # Recursively search in sub-panels if any
+                sub_panels = panel.get('panels', [])
+                if sub_panels:
+                    result = search_panels(sub_panels)
+                    if result:
+                        return result
+            return None
+
+        return search_panels(self.panels)
 
     def panel_sql(self, panel_id: int):
         return self.query(f"$.panels[*].targets[*].rawSql where parent.parent.id == {panel_id}")
@@ -134,7 +157,3 @@ class Dashboard:
          :param parameters: Grafana macro replacement parameters. - These are directly passed to preprocess. See that method for details.
         """
         return session.execute(text(Dashboard.preprocess(query, **parameters)))
-
-
-
-

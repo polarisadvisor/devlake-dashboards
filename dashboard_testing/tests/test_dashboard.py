@@ -34,6 +34,30 @@ def test_dashboard_variables(dashboard):
 def test_dashboard_panels(dashboard):
     assert len(dashboard.panels) == 3
 
+def test_find_panel_by_id(dashboard):
+    # Test finding a regular panel
+    panel = dashboard.find_panel_by_id(109)
+    assert panel is not None
+    assert panel.panel_id == 109
+    assert panel.datasource['type'] == 'mysql'
+    assert len(panel.targets) > 0
+
+    # Test finding a row panel (which might not have datasource/targets)
+    panel = dashboard.find_panel_by_id(121)
+    assert panel is not None
+    assert panel.panel_id == 121
+    assert panel.targets == []
+
+    # Test finding a non-existent panel
+    panel = dashboard.find_panel_by_id(99999)
+    assert panel is None
+
+    # Test finding a collapsed row panel with nested panels
+    panel = dashboard.find_panel_by_id(120)
+    assert panel is not None
+    assert panel.panel_id == 120
+
+
 
 def test_preprocess(dashboard):
     raw_sql = """SELECT * FROM projects
