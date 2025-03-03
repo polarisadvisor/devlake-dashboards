@@ -34,4 +34,4 @@ class TestCommonDashboards:
 
     def test_datasource_ids(self, dashboard):
         """Ensure all datasources are MySQL."""
-        assert all(ds["uid"] == "mysql" for ds in dashboard.datasources())
+        assert all(ds["uid"] == "mysql" for ds in dashboard.datasources('mysql'))
