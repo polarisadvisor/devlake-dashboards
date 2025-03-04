@@ -478,12 +478,12 @@
               {
                 "matcher": {
                   "id": "byName",
-                  "options": "review_time"
+                  "options": "time_to_merge"
                 },
                 "properties": [
                   {
                     "id": "displayName",
-                    "value": "Avg. Review Time (d)"
+                    "value": "Avg. Time to Merge (d)"
                   }
                 ]
               }
@@ -533,7 +533,7 @@
               "hide": false,
               "metricColumn": "none",
               "rawQuery": true,
-              "rawSql": "WITH _prs AS (\n  SELECT\n    pr.id,\n    prm.pr_created_date,\n    prm.pr_merged_date\n  FROM pull_requests pr\n  JOIN project_pr_metrics prm ON pr.id = prm.id\n  JOIN project_mapping pm ON pr.base_repo_id = pm.row_id AND pm.table = 'repos'\n  WHERE\n    $__timeFilter(pr.merged_date)\n    AND pm.project_name IN (${project})\n  GROUP BY 1,2,3\n)\nSELECT \n  CASE \n    WHEN '${interval}' = 'DAY' THEN DATE(pr_merged_date)\n    ELSE DATE_ADD(DATE(pr_merged_date), INTERVAL - $interval(DATE(pr_merged_date)) + 1 DAY) \n  END AS time,\n  AVG(TIMESTAMPDIFF(MINUTE, pr_created_date, pr_merged_date) / 1440) AS 'review_time'\nFROM _prs\nGROUP BY 1\nORDER BY 1;\n",
+              "rawSql": "WITH _prs AS (\n  SELECT\n    pr.id,\n    prm.pr_created_date,\n    prm.pr_merged_date\n  FROM pull_requests pr\n  JOIN project_pr_metrics prm ON pr.id = prm.id\n  JOIN project_mapping pm ON pr.base_repo_id = pm.row_id AND pm.table = 'repos'\n  WHERE\n    $__timeFilter(pr.merged_date)\n    AND pm.project_name IN (${project})\n  GROUP BY 1,2,3\n)\nSELECT \n  CASE \n    WHEN '${interval}' = 'DAY' THEN DATE(pr_merged_date)\n    ELSE DATE_ADD(DATE(pr_merged_date), INTERVAL - $interval(DATE(pr_merged_date)) + 1 DAY) \n  END AS time,\n  AVG(TIMESTAMPDIFF(MINUTE, pr_created_date, pr_merged_date) / 1440) AS 'time_to_merge'\nFROM _prs\nGROUP BY 1\nORDER BY 1;\n",
               "refId": "A",
               "select": [
                 [
@@ -574,7 +574,7 @@
               ]
             }
           ],
-          "title": "Avg. Review Time: From PR raised to PR merged",
+          "title": "Avg. Time to Merge: From PR raised to PR merged",
           "type": "timeseries"
         },
         {
@@ -841,6 +841,6 @@
   "timezone": "utc",
   "title": "Where is time spent on the path to production?",
   "uid": "pr-lead-time-for-changes",
-  "version": 24,
+  "version": 35,
   "weekStart": ""
 }

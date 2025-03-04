@@ -61,6 +61,7 @@ def _pull_requests(db_session: Session) -> Generator[dict[str, pd.DataFrame], No
     pr_metrics_df = pd.DataFrame({
         "id": ["PR_1", "PR_2", "PR_3", "PR_4", "PR_5"],
         "project_name": ["TestProject", "TestProject", "TestProject", "TestProject", "TestProject"],
+        "pr_created_date": ["2025-01-01", "2025-01-04", "2025-01-06", "2025-01-08", "2025-01-10"],
         "pr_merged_date": ["2025-01-03", "2025-01-05", "2025-01-07", "2025-01-09", "2025-01-11"],
 
         # time from first commit to pr raised. Computed by Devlake and stored on the fact table.
@@ -416,12 +417,12 @@ class TestCodingTimePanel:
         )
 
 
-class TestReviewTimePanel:
+class TestTimeToMergePanel:
 
     @staticmethod
     def test_monthly_trend(dashboard: Dashboard, db_session, _pull_requests):
-        review_time_panel_id: int = 122
-        panel: Panel = dashboard.find_panel_by_id(review_time_panel_id)
+        time_to_merge_panel_id: int = 122
+        panel: Panel = dashboard.find_panel_by_id(time_to_merge_panel_id)
         panel_sql: str = panel.targets[0]['rawSql']
         result: pd.DataFrame = to_dataframe(dashboard.execute(
             db_session,
@@ -436,19 +437,19 @@ class TestReviewTimePanel:
 
         expected = pd.DataFrame({
             'time': [date(2025, 1, 1)],
-            'review_time': [0.41],
+            'time_to_merge': [1.2],
         })
 
         assert_data_frames_equal(
             # convert Decimal values in result to floats so that can be compared approximately
-            decimal_to_float(result, 'review_time'),
+            decimal_to_float(result, 'time_to_merge'),
             expected
         )
 
     @staticmethod
     def test_weekly_trend(dashboard: Dashboard, db_session, _pull_requests):
-        coding_time_panel_id: int = 120
-        panel: Panel = dashboard.find_panel_by_id(coding_time_panel_id)
+        time_to_merge_panel_id: int = 122
+        panel: Panel = dashboard.find_panel_by_id(time_to_merge_panel_id)
 
         panel_sql: str = panel.targets[0]['rawSql']
         result: pd.DataFrame = to_dataframe(dashboard.execute(
@@ -464,19 +465,19 @@ class TestReviewTimePanel:
 
         expected = pd.DataFrame({
             'time': [date(2024, 12, 31), date(2025, 1, 7)],
-            'coding_time': [0.375, 0.43333333]
+            'time_to_merge': [1.5, 1.0]
         })
 
         assert_data_frames_equal(
             # convert Decimal values in result to floats so that can be compared approximately
-            decimal_to_float(result, 'coding_time'),
+            decimal_to_float(result, 'time_to_merge'),
             expected
         )
 
     @staticmethod
     def test_daily_trend(dashboard: Dashboard, db_session, _pull_requests):
-        coding_time_panel_id: int = 120
-        panel: Panel = dashboard.find_panel_by_id(coding_time_panel_id)
+        time_to_merge_panel_id: int = 122
+        panel: Panel = dashboard.find_panel_by_id(time_to_merge_panel_id)
 
         panel_sql: str = panel.targets[0]['rawSql']
         result: pd.DataFrame = to_dataframe(dashboard.execute(
@@ -492,20 +493,20 @@ class TestReviewTimePanel:
 
         expected = pd.DataFrame({
             'time': [date(2025, 1, 3), date(2025, 1, 5), date(2025, 1, 7), date(2025, 1, 9), date(2025, 1, 11)],
-            'coding_time': [0.5, 0.25, 0.3, 0.5, 0.5],
+            'time_to_merge': [2, 1, 1, 1, 1],
 
         })
 
         assert_data_frames_equal(
             # convert Decimal values in result to floats so that can be compared approximately
-            decimal_to_float(result, 'coding_time'),
+            decimal_to_float(result, 'time_to_merge'),
             expected
         )
 
     @staticmethod
     def test_time_filtering(dashboard: Dashboard, db_session, _pull_requests):
-        coding_time_panel_id: int = 120
-        panel: Panel = dashboard.find_panel_by_id(coding_time_panel_id)
+        time_to_merge_panel_id: int = 122
+        panel: Panel = dashboard.find_panel_by_id(time_to_merge_panel_id)
 
         panel_sql: str = panel.targets[0]['rawSql']
         result: pd.DataFrame = to_dataframe(dashboard.execute(
@@ -521,13 +522,13 @@ class TestReviewTimePanel:
 
         expected = pd.DataFrame({
             'time': [date(2025, 1, 3), date(2025, 1, 5), date(2025, 1, 7)],
-            'coding_time': [0.5, 0.25, 0.3],
+            'time_to_merge': [2,1,1],
 
         })
 
         assert_data_frames_equal(
             # convert Decimal values in result to floats so that can be compared approximately
-            decimal_to_float(result, 'coding_time'),
+            decimal_to_float(result, 'time_to_merge'),
             expected
         )
 
@@ -552,8 +553,8 @@ class TestReviewTimePanel:
 
     @staticmethod
     def test_only_project_repos_are_included(dashboard: Dashboard, db_session, _non_project_pull_requests):
-        coding_time_panel_id: int = 120
-        panel: Panel = dashboard.find_panel_by_id(coding_time_panel_id)
+        time_to_merge_panel_id: int = 122
+        panel: Panel = dashboard.find_panel_by_id(time_to_merge_panel_id)
 
         panel_sql: str = panel.targets[0]['rawSql']
         result: pd.DataFrame = to_dataframe(dashboard.execute(
@@ -569,12 +570,12 @@ class TestReviewTimePanel:
 
         expected = pd.DataFrame({
             'time': [date(2025, 1, 3), date(2025, 1, 5), date(2025, 1, 7)],
-            'coding_time': [0.5, 0.25, 0.3],
+            'time_to_merge': [2,1,1],
 
         })
 
         assert_data_frames_equal(
             # convert Decimal values in result to floats so that can be compared approximately
-            decimal_to_float(result, 'coding_time'),
+            decimal_to_float(result, 'time_to_merge'),
             expected
         )
