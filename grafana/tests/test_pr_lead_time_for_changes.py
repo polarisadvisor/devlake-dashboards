@@ -579,3 +579,166 @@ class TestTimeToMergePanel:
             decimal_to_float(result, 'time_to_merge'),
             expected
         )
+
+class TestDeployTimePanel:
+
+    @staticmethod
+    def test_monthly_trend(dashboard: Dashboard, db_session, _pull_requests):
+        deploy_time_panel_id: int = 119
+        panel: Panel = dashboard.find_panel_by_id(deploy_time_panel_id)
+        panel_sql: str = panel.targets[0]['rawSql']
+        result: pd.DataFrame = to_dataframe(dashboard.execute(
+            db_session,
+            panel_sql,
+            project="'TestProject'",
+            interval="DAYOFMONTH",
+            time_filter_from="'2025-01-01'",
+            time_filter_to="NOW()"
+
+        ))
+        assert result.shape == (1, 2)
+
+        expected = pd.DataFrame({
+            'time': [date(2025, 1, 1)],
+            'time_to_deploy': [0.3],
+        })
+
+        assert_data_frames_equal(
+            # convert Decimal values in result to floats so that can be compared approximately
+            decimal_to_float(result, 'time_to_deploy'),
+            expected
+        )
+
+    @staticmethod
+    def test_weekly_trend(dashboard: Dashboard, db_session, _pull_requests):
+        deploy_time_panel_id: int = 119
+        panel: Panel = dashboard.find_panel_by_id(deploy_time_panel_id)
+
+        panel_sql: str = panel.targets[0]['rawSql']
+        result: pd.DataFrame = to_dataframe(dashboard.execute(
+            db_session,
+            panel_sql,
+            project="'TestProject'",
+            interval="WEEKDAY",
+            time_filter_from="'2025-01-01'",
+            time_filter_to="NOW()"
+
+        ))
+        assert result.shape == (2, 2)
+
+        expected = pd.DataFrame({
+            'time': [date(2024, 12, 31), date(2025, 1, 7)],
+            'time_to_deploy': [0.375, 0.25]
+        })
+
+        assert_data_frames_equal(
+            # convert Decimal values in result to floats so that can be compared approximately
+            decimal_to_float(result, 'time_to_deploy'),
+            expected
+        )
+
+    @staticmethod
+    def test_daily_trend(dashboard: Dashboard, db_session, _pull_requests):
+        deploy_time_panel_id: int = 119
+        panel: Panel = dashboard.find_panel_by_id(deploy_time_panel_id)
+
+        panel_sql: str = panel.targets[0]['rawSql']
+        result: pd.DataFrame = to_dataframe(dashboard.execute(
+            db_session,
+            panel_sql,
+            project="'TestProject'",
+            interval="DAY",
+            time_filter_from="'2025-01-01'",
+            time_filter_to="NOW()"
+
+        ))
+        assert result.shape == (5, 2)
+
+        expected = pd.DataFrame({
+            'time': [date(2025, 1, 3), date(2025, 1, 5), date(2025, 1, 7), date(2025, 1, 9), date(2025, 1, 11)],
+            'time_to_deploy': [0.5, 0.25, 0.25, 0.25, 0.25],
+
+        })
+
+        assert_data_frames_equal(
+            # convert Decimal values in result to floats so that can be compared approximately
+            decimal_to_float(result, 'time_to_deploy'),
+            expected
+        )
+
+    @staticmethod
+    def test_time_filtering(dashboard: Dashboard, db_session, _pull_requests):
+        deploy_time_panel_id: int = 119
+        panel: Panel = dashboard.find_panel_by_id(deploy_time_panel_id)
+
+        panel_sql: str = panel.targets[0]['rawSql']
+        result: pd.DataFrame = to_dataframe(dashboard.execute(
+            db_session,
+            panel_sql,
+            project="'TestProject'",
+            interval="DAY",
+            time_filter_from="'2025-01-03'",
+            time_filter_to="'2025-01-07'"
+
+        ))
+        assert result.shape == (3, 2)
+
+        expected = pd.DataFrame({
+            'time': [date(2025, 1, 3), date(2025, 1, 5), date(2025, 1, 7)],
+            'time_to_deploy': [0.5, 0.25, 0.25],
+
+        })
+
+        assert_data_frames_equal(
+            # convert Decimal values in result to floats so that can be compared approximately
+            decimal_to_float(result, 'time_to_deploy'),
+            expected
+        )
+
+    @staticmethod
+    @pytest.fixture()
+    def _non_project_pull_requests(db_session: Session, _pull_requests: dict[str, pd.DataFrame]) -> Generator[
+        dict[str, pd.DataFrame], None, None]:
+        # add an extra pull request from a repo that is not mapped to the current project
+        fixture = _pull_requests
+        non_project_pr = pd.DataFrame([
+            {
+                'id': ["PR_6"],
+                'base_repo_id': ["repo_2"],
+                'created_date': ["2025-01-03"],
+                'merged_date': ["2025-01-04"],
+            }
+        ])
+        insert_dataframe(db_session, non_project_pr, PullRequest)
+        db_session.flush()
+        fixture['pull_requests'] = pd.concat([fixture['pull_requests'], non_project_pr])
+        yield fixture
+
+    @staticmethod
+    def test_only_project_repos_are_included(dashboard: Dashboard, db_session, _non_project_pull_requests):
+        deploy_time_panel_id: int = 119
+        panel: Panel = dashboard.find_panel_by_id(deploy_time_panel_id)
+
+        panel_sql: str = panel.targets[0]['rawSql']
+        result: pd.DataFrame = to_dataframe(dashboard.execute(
+            db_session,
+            panel_sql,
+            project="'TestProject'",
+            interval="DAY",
+            time_filter_from="'2025-01-03'",
+            time_filter_to="'2025-01-07'"
+
+        ))
+        assert result.shape == (3, 2)
+
+        expected = pd.DataFrame({
+            'time': [date(2025, 1, 3), date(2025, 1, 5), date(2025, 1, 7)],
+            'time_to_deploy': [0.5, 0.25, 0.25],
+
+        })
+
+        assert_data_frames_equal(
+            # convert Decimal values in result to floats so that can be compared approximately
+            decimal_to_float(result, 'time_to_deploy'),
+            expected
+        )

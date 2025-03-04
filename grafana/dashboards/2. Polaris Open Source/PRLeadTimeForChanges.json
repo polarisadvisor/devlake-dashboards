@@ -639,30 +639,12 @@
               {
                 "matcher": {
                   "id": "byName",
-                  "options": "PR: Opened"
+                  "options": "time_to_deploy"
                 },
                 "properties": [
                   {
-                    "id": "color",
-                    "value": {
-                      "fixedColor": "red",
-                      "mode": "fixed"
-                    }
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "PR: Merged"
-                },
-                "properties": [
-                  {
-                    "id": "color",
-                    "value": {
-                      "fixedColor": "super-light-green",
-                      "mode": "fixed"
-                    }
+                    "id": "displayName",
+                    "value": "Avg. Time to Deploy (d)"
                   }
                 ]
               }
@@ -712,7 +694,7 @@
               "hide": false,
               "metricColumn": "none",
               "rawQuery": true,
-              "rawSql": "WITH _prs AS (\n  SELECT\n    pr.id,\n    pr.merged_date AS pr_merged_date,\n    -- Correcting from minutes to days (/1440 instead of /60)\n    COALESCE(prm.pr_deploy_time/1440, 0) AS deploy_time\n  FROM pull_requests pr\n  LEFT JOIN project_pr_metrics prm ON pr.id = prm.id\n  JOIN project_mapping pm ON pr.base_repo_id = pm.row_id AND pm.table = 'repos'\n  WHERE\n    $__timeFilter(pr.merged_date)\n    AND pm.project_name IN (${project})\n  GROUP BY 1,2,3\n)\nSELECT \n  CASE \n    WHEN '${interval}' = 'DAY' THEN DATE(pr_merged_date)\n    ELSE DATE_ADD(DATE(pr_merged_date), INTERVAL - $interval(DATE(pr_merged_date)) + 1 DAY) \n  END AS time,\n  AVG(deploy_time) AS 'Avg. Deploy Time (d)'\nFROM _prs\nGROUP BY 1\nORDER BY 1;\n",
+              "rawSql": "WITH _prs AS (\n  SELECT\n    pr.id,\n    pr.merged_date AS pr_merged_date,\n    -- Correcting from minutes to days (/1440 instead of /60)\n    COALESCE(prm.pr_deploy_time/1440, 0) AS deploy_time\n  FROM pull_requests pr\n  LEFT JOIN project_pr_metrics prm ON pr.id = prm.id\n  JOIN project_mapping pm ON pr.base_repo_id = pm.row_id AND pm.table = 'repos'\n  WHERE\n    $__timeFilter(pr.merged_date)\n    AND pm.project_name IN (${project})\n  GROUP BY 1,2,3\n)\nSELECT \n  CASE \n    WHEN '${interval}' = 'DAY' THEN DATE(pr_merged_date)\n    ELSE DATE_ADD(DATE(pr_merged_date), INTERVAL - $interval(DATE(pr_merged_date)) + 1 DAY) \n  END AS time,\n  AVG(deploy_time) AS 'time_to_deploy'\nFROM _prs\nGROUP BY 1\nORDER BY 1;\n",
               "refId": "A",
               "select": [
                 [
@@ -753,7 +735,7 @@
               ]
             }
           ],
-          "title": "Avg. Deploy Time: From PR merged to changes deployed",
+          "title": "Avg. Time to Deploy: From PR merged to changes deployed",
           "type": "timeseries"
         }
       ],
