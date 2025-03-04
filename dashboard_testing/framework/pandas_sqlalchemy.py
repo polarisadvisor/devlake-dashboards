@@ -25,7 +25,7 @@ def decimal_to_float(dataframe: pd.DataFrame, *columns: str) -> pd.DataFrame:
 
 def days2minutes(days: list[float]) -> list[float]:
     """Convert days to minutes."""
-    return list(map(lambda x: x*1440, days))
+    return [day*1440 for day in days]
 
 def assert_data_frames_equal(result: pd.DataFrame, expected: pd.DataFrame) -> None:
     assert_frame_equal(
